@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今天吃什麼？美食御神籤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8372D;
+    --red-deep: #9E2A22;
+    --paper: #F7F1E3;
+    --slip: #FFFDF6;
+    --ink: #2B2B2B;
+    --wood: #B98A5A;
+    --gold: #B8922F;
+    --muted: #776C5D;
+    --line: #E0D3B6;
+    --serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; color-scheme: light; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 12px 20px 56px; }
+
+  /* 標題區 */
+  .top { position: relative; text-align: center; padding-top: 36px; }
+  .sound {
+    position: absolute; top: 4px; right: 0;
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 4px 12px; color: var(--muted); font-size: .9rem;
+  }
+  .sound[aria-pressed="true"] { color: var(--red); border-color: var(--red); }
+  .torii { width: 92px; height: auto; display: block; margin: 0 auto 6px; }
+  .brand {
+    margin: 0; font-family: var(--serif); font-weight: 700; color: var(--red);
+    letter-spacing: .45em; padding-left: .45em; font-size: .95rem;
+  }
+  h1 {
+    margin: .05em 0 .15em; font-family: var(--serif); font-weight: 900;
+    font-size: clamp(2.1rem, 9vw, 2.7rem); letter-spacing: .06em;
+  }
+  .sub { margin: 0; color: var(--muted); }
+
+  /* 時段標籤 */
+  .tabs {
+    display: flex; width: fit-content; margin: 28px auto 8px;
+    border: 2px solid var(--red); border-radius: 999px; overflow: hidden;
+  }
+  .tabs button {
+    border: 0; background: transparent; color: var(--red);
+    padding: 8px 24px; font-family: var(--serif); font-weight: 700; font-size: 1.05rem;
+  }
+  .tabs button + button { border-left: 2px solid var(--red); }
+  .tabs button[aria-pressed="true"] { background: var(--red); color: var(--slip); }
+  .auto-hint { text-align: center; color: var(--muted); font-size: .85rem; margin: 0; }
+
+  /* 抽籤區 */
+  .shrine { text-align: center; margin-top: 12px; }
+  #box { width: 170px; height: auto; overflow: visible; transform-origin: 50% 85%; }
+  #box.shaking { animation: shake .16s ease-in-out infinite alternate; }
+  @keyframes shake {
+    from { transform: rotate(-11deg) translateX(-4px); }
+    to   { transform: rotate(11deg) translateX(4px); }
+  }
+  #stick { transition: transform .5s cubic-bezier(.2, .9, .3, 1.15); }
+  #stick.out { transform: translateY(-108px); }
+  .count { margin: 4px 0 14px; color: var(--muted); font-size: .95rem; }
+  .count strong { color: var(--ink); font-weight: 500; }
+  .primary {
+    background: var(--red); color: var(--slip); border: 0; border-radius: 6px;
+    padding: 12px 60px; font-family: var(--serif); font-weight: 700; font-size: 1.3rem;
+    letter-spacing: .3em; padding-left: calc(60px + .3em);
+    box-shadow: 0 4px 0 var(--red-deep);
+  }
+  .primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--red-deep); }
+  .primary:disabled, .secondary:disabled { opacity: .55; cursor: default; }
+  .note { min-height: 1.6em; margin: 14px 0 0; color: var(--red-deep); font-weight: 500; }
+
+  /* 籤紙 */
+  .result { margin-top: 20px; text-align: center; }
+  .slip {
+    position: relative; max-width: 360px; margin: 0 auto; padding: 26px 24px 24px;
+    background: var(--slip);
+    box-shadow: inset 0 0 0 6px var(--slip), inset 0 0 0 7px var(--red), 0 6px 18px rgba(120, 90, 40, .15);
+    transform-origin: top center;
+  }
+  .slip.open { animation: unfold .55s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes unfold {
+    from { transform: scaleY(.04); opacity: .2; }
+    to   { transform: scaleY(1); opacity: 1; }
+  }
+  .slip-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--serif); font-size: .95rem; color: var(--muted);
+    border-bottom: 1px solid var(--line); padding-bottom: 8px;
+  }
+  .meal-tag { color: var(--red); font-weight: 700; }
+  .rank {
+    font-family: var(--serif); font-weight: 900; color: var(--red);
+    font-size: 4.2rem; line-height: 1.1; letter-spacing: .12em; padding-left: .12em; margin: 14px 0 6px;
+  }
+  .rank.kyo { color: var(--ink); }
+  .dish { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .dish .emoji { font-size: 2rem; }
+  .dish h2 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: 1.7rem; letter-spacing: .08em; }
+  .poem-box { display: flex; justify-content: center; margin: 18px 0; }
+  .poem {
+    writing-mode: vertical-rl; font-family: var(--serif); font-weight: 500;
+    font-size: 1.3rem; letter-spacing: .28em; line-height: 2.1;
+    padding: 12px 18px; border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+  }
+  .poem span { display: block; }
+  .luck { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 16px; }
+  .luck dt { font-size: .85rem; color: var(--muted); }
+  .luck dd { margin: 0; color: var(--gold); letter-spacing: .12em; font-size: 1.1rem; }
+  .oracle { border-top: 1px solid var(--line); padding-top: 12px; text-align: left; }
+  .oracle h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 1rem; color: var(--red); }
+  .oracle p { margin: 0; }
+  .oracle .kyo-line { color: var(--red-deep); font-weight: 500; margin-bottom: 4px; }
+  .secondary {
+    margin-top: 18px; background: transparent; color: var(--red);
+    border: 2px solid var(--red); border-radius: 6px; padding: 8px 28px;
+    font-family: var(--serif); font-weight: 700; font-size: 1.05rem;
+  }
+
+  /* 排除與紀錄 */
+  .panel { margin-top: 44px; border-top: 1px solid var(--line); padding-top: 22px; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .panel h2 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: 1.3rem; }
+  .text-btn {
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 4px 14px; color: var(--ink); font-size: .9rem;
+  }
+  .hint { margin: 6px 0 4px; color: var(--muted); font-size: .9rem; }
+  .cat h3 { margin: 16px 0 8px; font-size: .9rem; font-weight: 500; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--slip); color: var(--ink);
+    border-radius: 999px; padding: 5px 12px; font-size: .95rem;
+  }
+  .chip[aria-pressed="true"] {
+    background: #E9E1CF; color: #9C917F; text-decoration: line-through; border-style: dashed;
+  }
+  .history { list-style: none; margin: 12px 0 0; padding: 0; }
+  .history li {
+    display: grid; grid-template-columns: 3.4em 1fr auto; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px dashed var(--line);
+  }
+  .h-rank { font-family: var(--serif); font-weight: 900; color: var(--red); }
+  .h-rank.kyo { color: var(--ink); }
+  .h-meta { color: var(--muted); font-size: .85rem; text-align: right; }
+  .empty { color: var(--muted); margin: 10px 0 0; }
+  footer { margin-top: 48px; text-align: center; color: var(--muted); font-size: .8rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #box.shaking, .slip.open { animation: none; }
+    #stick { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <button id="soundBtn" class="sound" aria-pressed="false">🔇 音效關</button>
+    <svg class="torii" viewBox="0 0 120 72" aria-hidden="true">
+      <path d="M2 11 Q60 1 118 11 L116 18 Q60 10 4 18 Z" fill="#2B2B2B"/>
+      <rect x="11" y="18" width="98" height="6" fill="#C8372D"/>
+      <rect x="17" y="33" width="86" height="5" fill="#C8372D"/>
+      <rect x="56" y="24" width="8" height="9" fill="#C8372D"/>
+      <rect x="27" y="18" width="7" height="54" fill="#C8372D"/>
+      <rect x="86" y="18" width="7" height="54" fill="#C8372D"/>
+    </svg>
+    <p class="brand">美食御神籤</p>
+    <h1>今天吃什麼？</h1>
+    <p class="sub">排除不想吃的，剩下的交給神明決定</p>
+  </header>
+
+  <nav class="tabs" aria-label="選擇時段">
+    <button data-meal="lunch" aria-pressed="false">午餐</button>
+    <button data-meal="snack" aria-pressed="false">點心</button>
+    <button data-meal="dinner" aria-pressed="false">晚餐</button>
+  </nav>
+  <p class="auto-hint" id="autoHint"></p>
+
+  <section class="shrine" aria-label="抽籤">
+    <svg id="box" viewBox="0 -50 200 300" role="img" aria-label="御神籤籤筒">
+      <g id="stick">
+        <rect x="94" y="72" width="12" height="150" rx="2" fill="#EAD7AB" stroke="#A47A4C" stroke-width="1.5"/>
+        <rect x="94" y="72" width="12" height="20" rx="2" fill="#C8372D"/>
+      </g>
+      <polygon points="40,40 70,55 70,236 40,221" fill="#9C7247"/>
+      <polygon points="70,55 130,55 130,236 70,236" fill="#B98A5A"/>
+      <polygon points="130,55 160,40 160,221 130,236" fill="#A57B4E"/>
+      <polygon points="40,40 70,25 130,25 160,40 130,55 70,55" fill="#CFA678"/>
+      <ellipse cx="100" cy="40" rx="9" ry="4.5" fill="#3A2A1A"/>
+      <rect x="83" y="80" width="34" height="118" fill="#F7F1E3"/>
+      <rect x="86" y="83" width="28" height="112" fill="none" stroke="#C8372D" stroke-width="1.5"/>
+      <text x="100" y="114" text-anchor="middle" font-size="22" font-weight="900" fill="#C8372D" font-family="Noto Serif TC, serif">御</text>
+      <text x="100" y="146" text-anchor="middle" font-size="22" font-weight="900" fill="#C8372D" font-family="Noto Serif TC, serif">神</text>
+      <text x="100" y="178" text-anchor="middle" font-size="22" font-weight="900" fill="#C8372D" font-family="Noto Serif TC, serif">籤</text>
+      <rect x="40" y="70" width="120" height="6" fill="#C8372D" opacity=".85"/>
+      <rect x="40" y="206" width="120" height="6" fill="#C8372D" opacity=".85"/>
+    </svg>
+    <p class="count" id="count"></p>
+    <button id="drawBtn" class="primary">抽籤</button>
+    <p class="note" id="note" aria-live="polite"></p>
+  </section>
+
+  <section class="result" id="result" hidden aria-live="polite">
+    <article class="slip" id="slip">
+      <div class="slip-head">
+        <span id="slipNo"></span>
+        <span class="meal-tag" id="slipMeal"></span>
+      </div>
+      <div class="rank" id="slipRank"></div>
+      <div class="dish">
+        <span class="emoji" id="slipEmoji" aria-hidden="true"></span>
+        <h2 id="slipName"></h2>
+      </div>
+      <div class="poem-box"><div class="poem" id="slipPoem"></div></div>
+      <dl class="luck">
+        <div><dt>飽足運</dt><dd id="luckFull"></dd></div>
+        <div><dt>幸福運</dt><dd id="luckHappy"></dd></div>
+      </dl>
+      <div class="oracle">
+        <h3>御神託</h3>
+        <div id="slipOracle"></div>
+      </div>
+    </article>
+    <button id="againBtn" class="secondary">再抽一次</button>
+  </section>
+
+  <section class="panel" aria-labelledby="excludeTitle">
+    <div class="panel-head">
+      <h2 id="excludeTitle">今天不想吃</h2>
+      <button id="resetBtn" class="text-btn">全部恢復</button>
+    </div>
+    <p class="hint">點一下就不會被抽到，再點一次取消。重新開啟網頁會自動恢復。</p>
+    <div id="excludeList"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="historyTitle">
+    <h2 id="historyTitle">最近抽到的籤</h2>
+    <ol class="history" id="historyList"></ol>
+    <p class="empty" id="historyEmpty">還沒有抽過籤，按上面的「抽籤」試試看。</p>
+  </section>
+
+  <footer>今天吃什麼？美食御神籤</footer>
+</div>
+
+<script>
+// ===== 餐點資料 =====
+const MEAL_NAMES = { lunch: "午餐", snack: "點心", dinner: "晚餐" };
+const CATEGORIES = ["飯類", "麵類", "鍋物", "小吃", "異國／其他", "點心"];
+const L = "lunch", S = "snack", D = "dinner";
+
+const DISHES = [
+  { id: 1,  name: "滷肉飯",   emoji: "🍚", cat: "飯類", meals: [L, S, D], poem: ["肥瘦相間醬香濃", "一碗下肚萬事通"], oracle: "平凡最安心，一碗滷肉飯就能找回力氣。" },
+  { id: 2,  name: "雞腿便當", emoji: "🍱", cat: "飯類", meals: [L, D],    poem: ["金黃雞腿配三菜", "午後精神自然來"], oracle: "今天需要扎實的一餐，雞腿便當不會讓你失望。" },
+  { id: 3,  name: "咖哩飯",   emoji: "🍛", cat: "飯類", meals: [L, D],    poem: ["濃香咖哩覆白飯", "疲憊一掃心自寬"], oracle: "累了就吃咖哩，溫暖又有飽足感。" },
+  { id: 4,  name: "炒飯",     emoji: "🍳", cat: "飯類", meals: [L, S, D], poem: ["粒粒分明鍋氣香", "簡單滋味最久長"], oracle: "不想多想的日子，一盤炒飯剛剛好。" },
+  { id: 5,  name: "丼飯",     emoji: "🍤", cat: "飯類", meals: [L, D],    poem: ["大碗鋪滿好料來", "一口一口笑顏開"], oracle: "想吃得豪邁一點，就來碗丼飯吧！" },
+  { id: 6,  name: "韓式拌飯", emoji: "🥘", cat: "飯類", meals: [L, D],    poem: ["石鍋滋滋拌百味", "紅綠交織好運隨"], oracle: "把今天的煩惱也一起拌一拌，吃下去就好了。" },
+  { id: 7,  name: "牛肉麵",   emoji: "🥢", cat: "麵類", meals: [L, D],    poem: ["紅燒湯頭燉半天", "大塊牛肉暖心田"], oracle: "今天值得好好犒賞自己，一碗牛肉麵正是時候。" },
+  { id: 8,  name: "拉麵",     emoji: "🍜", cat: "麵類", meals: [L, S, D], poem: ["湯濃麵韌暖心間", "今日煩憂付雲煙"], oracle: "今天適合吃點熱的，拉麵就是你的答案！" },
+  { id: 9,  name: "義大利麵", emoji: "🍝", cat: "麵類", meals: [L, D],    poem: ["捲起一叉異國風", "平凡日子也從容"], oracle: "換個口味換個心情，義大利麵帶你小旅行。" },
+  { id: 10, name: "乾麵",     emoji: "🥡", cat: "麵類", meals: [L, S, D], poem: ["一碗乾麵拌得勻", "簡單快速又安心"], oracle: "時間不多也沒關係，乾麵三兩口就搞定。" },
+  { id: 11, name: "鍋燒意麵", emoji: "🍥", cat: "麵類", meals: [L, S, D], poem: ["小鍋熱湯滾意麵", "魚板蝦仁笑開顏"], oracle: "熱呼呼的一小鍋，最適合放鬆的時刻。" },
+  { id: 12, name: "火鍋",     emoji: "🍲", cat: "鍋物", meals: [D],       poem: ["一鍋沸騰百味聚", "煩惱下鍋全煮去"], oracle: "今晚就讓火鍋把煩惱通通煮掉吧！" },
+  { id: 13, name: "麻辣燙",   emoji: "🌶️", cat: "鍋物", meals: [L, S, D], poem: ["麻辣上心好暢快", "汗水淋漓壓力外"], oracle: "需要一點刺激？麻辣燙幫你把壓力辣走。" },
+  { id: 14, name: "薑母鴨",   emoji: "🦆", cat: "鍋物", meals: [S, D],    poem: ["薑香麻油驅寒意", "一碗下肚暖到底"], oracle: "天氣再冷，吃完薑母鴨也會從裡暖到外。" },
+  { id: 15, name: "水煎包",   emoji: "🥟", cat: "小吃", meals: [L, S],    poem: ["底酥皮軟湯汁香", "一口咬下好時光"], oracle: "小心燙口！酥脆的水煎包是今天的小確幸。" },
+  { id: 16, name: "鍋貼",     emoji: "🥟", cat: "小吃", meals: [L, S, D], poem: ["金黃脆底排整齊", "咬下鮮汁好福氣"], oracle: "來一盤鍋貼，配碗酸辣湯就完美了。" },
+  { id: 17, name: "水餃",     emoji: "🥟", cat: "小吃", meals: [L, S, D], poem: ["一顆一顆包團圓", "簡單幸福在眼前"], oracle: "沾點醬油加辣油，水餃永遠不會出錯。" },
+  { id: 18, name: "滷味",     emoji: "🍢", cat: "小吃", meals: [L, S, D], poem: ["自選百味入滷鍋", "喜歡什麼就夾多"], oracle: "今天的你最了解自己，滷味想夾什麼就夾什麼。" },
+  { id: 19, name: "蔥油餅",   emoji: "🫓", cat: "小吃", meals: [L, S],    poem: ["層層酥脆蔥花香", "路邊美味最難忘"], oracle: "加顆蛋更美味，蔥油餅是最強的街頭點心。" },
+  { id: 20, name: "臭豆腐",   emoji: "🧆", cat: "小吃", meals: [S, D],    poem: ["其臭難掩其味香", "酥皮泡菜配成雙"], oracle: "別被味道嚇跑，勇敢的人才吃得到好東西。" },
+  { id: 21, name: "鹽酥雞",   emoji: "🍗", cat: "小吃", meals: [S, D],    poem: ["九層塔香炸物鮮", "深夜一包勝神仙"], oracle: "今天辛苦了，來包鹽酥雞犒賞自己吧！" },
+  { id: 22, name: "漢堡",     emoji: "🍔", cat: "異國／其他", meals: [L, S, D], poem: ["麵包夾肉層層疊", "大口咬下心喜悅"], oracle: "想吃得豪邁就選漢堡，記得多拿幾張紙巾。" },
+  { id: 23, name: "披薩",     emoji: "🍕", cat: "異國／其他", meals: [L, D],    poem: ["芝士牽絲餅香濃", "分享快樂樂無窮"], oracle: "找朋友一起吃吧，披薩分享起來更美味。" },
+  { id: 24, name: "壽司",     emoji: "🍣", cat: "異國／其他", meals: [L, D],    poem: ["一貫一貫手捏成", "清爽鮮甜心也輕"], oracle: "想吃清爽一點，壽司是精緻又不負擔的選擇。" },
+  { id: 25, name: "燒肉",     emoji: "🥩", cat: "異國／其他", meals: [D],       poem: ["炭火滋滋肉香飄", "今晚就該吃一遭"], oracle: "今天值得好好慶祝，燒肉吃起來！" },
+  { id: 26, name: "沙拉",     emoji: "🥗", cat: "異國／其他", meals: [L, D],    poem: ["翠綠清脆一大盤", "輕盈身心好平安"], oracle: "給身體放個假，清爽的沙拉讓你更有活力。" },
+  { id: 27, name: "豆花",     emoji: "🍮", cat: "點心", meals: [S], poem: ["軟嫩豆花糖水甜", "花生粉圓樣樣全"], oracle: "來碗豆花，讓心情跟著甜起來。" },
+  { id: 28, name: "雞蛋糕",   emoji: "🧁", cat: "點心", meals: [S], poem: ["小小蛋糕熱烘烘", "香甜可愛笑容中"], oracle: "邊走邊吃剛剛好，雞蛋糕是療癒的小點心。" },
+  { id: 29, name: "紅豆餅",   emoji: "🥮", cat: "點心", meals: [S], poem: ["圓餅一咬餡滿滿", "紅豆奶油都喜歡"], oracle: "紅豆還是奶油？兩個都買就不用選了。" },
+  { id: 30, name: "剉冰",     emoji: "🍧", cat: "點心", meals: [S], poem: ["冰山堆滿好配料", "炎炎暑氣全退掉"], oracle: "來碗剉冰，把燥熱和煩躁一起降溫。" },
+  { id: 31, name: "珍珠奶茶", emoji: "🧋", cat: "點心", meals: [S], poem: ["Ｑ彈珍珠奶香濃", "一杯在手好輕鬆"], oracle: "人生苦短，珍珠奶茶就該全糖……或是半糖也行。" },
+  { id: 32, name: "鬆餅",     emoji: "🥞", cat: "點心", meals: [S], poem: ["鬆軟香甜淋蜂蜜", "悠閒午後好心情"], oracle: "慢下來享受一下，鬆餅配飲料是最棒的午茶。" }
+];
+
+// ===== 籤等與機率 =====
+const RANKS = [
+  { name: "大吉", p: 15, stars: [5, 5] },
+  { name: "吉",   p: 25, stars: [4, 5] },
+  { name: "中吉", p: 20, stars: [3, 4] },
+  { name: "小吉", p: 20, stars: [3, 3] },
+  { name: "末吉", p: 15, stars: [2, 3] },
+  { name: "凶",   p: 5,  stars: [1, 2] }
+];
+const KYO_LINES = [
+  "凶，但吃完就會轉運！",
+  "凶籤別擔心，吃飽了運氣自然來。",
+  "神明說：先吃飯，運勢等等再說。"
+];
+
+// ===== 狀態 =====
+const HISTORY_KEY = "food-omikuji-history";
+const state = {
+  meal: detectMeal(),
+  excluded: new Set(),   // 只存在這次開網頁，重新整理就恢復
+  lastId: null,          // 上一次抽到的餐點
+  busy: false,
+  soundOn: false,
+  history: loadHistory()
+};
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SHAKE_MS = reduceMotion ? 0 : 1400;
+const EMERGE_MS = reduceMotion ? 0 : 550;
+
+const $ = (id) => document.getElementById(id);
+
+// ===== 工具函式 =====
+function detectMeal(date = new Date()) {
+  const t = date.getHours() + date.getMinutes() / 60;
+  if (t >= 5 && t < 14) return L;   // 05:00–14:00（10:30 前也預設午餐）
+  if (t >= 14 && t < 17) return S;  // 下午點心
+  if (t >= 17 && t < 21) return D;  // 晚餐
+  return S;                         // 21:00–05:00 宵夜
+}
+function randInt(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+function pickRank() {
+  let r = Math.random() * 100;
+  for (const rank of RANKS) { if (r < rank.p) return rank; r -= rank.p; }
+  return RANKS[0];
+}
+function stars(n) { return "★".repeat(n) + "☆".repeat(5 - n); }
+function toKanji(n) {
+  const d = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+  if (n < 10) return d[n];
+  const tens = Math.floor(n / 10), ones = n % 10;
+  return (tens > 1 ? d[tens] : "") + "十" + d[ones];
+}
+function currentPool() {
+  return DISHES.filter(d => d.meals.includes(state.meal) && !state.excluded.has(d.id));
+}
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list.slice(0, 5) : [];
+  } catch (e) { return []; }
+}
+function saveHistory() {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(state.history)); } catch (e) { /* 無法儲存時照常運作 */ }
+}
+
+// ===== 音效（Web Audio API 即時合成）=====
+let audioCtx = null, noiseBuf = null;
+function getAudio() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!audioCtx) {
+    audioCtx = new Ctx();
+    noiseBuf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.08), audioCtx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function clack(ctx, when) {
+  const src = ctx.createBufferSource();
+  src.buffer = noiseBuf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 900 + Math.random() * 900;
+  filter.Q.value = 5;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.9, when);
+  gain.gain.exponentialRampToValueAtTime(0.001, when + 0.06);
+  src.connect(filter).connect(gain).connect(ctx.destination);
+  src.start(when);
+  src.stop(when + 0.08);
+}
+function playShake(seconds) {
+  const ctx = getAudio(); if (!ctx) return;
+  let t = 0;
+  while (t < seconds) { clack(ctx, ctx.currentTime + t); t += 0.06 + Math.random() * 0.09; }
+}
+function playBell() {
+  const ctx = getAudio(); if (!ctx) return;
+  const now = ctx.currentTime;
+  [[1046, 0.35], [2620, 0.18], [4180, 0.08]].forEach(([freq, vol]) => {
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(vol, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 2.3);
+  });
+}
+
+// ===== 畫面更新 =====
+function renderTabs() {
+  document.querySelectorAll(".tabs button").forEach(btn => {
+    btn.setAttribute("aria-pressed", String(btn.dataset.meal === state.meal));
+  });
+}
+function renderCount() {
+  const n = currentPool().length;
+  $("count").innerHTML = n > 0
+    ? `${MEAL_NAMES[state.meal]}籤筒裡還有 <strong>${n}</strong> 支籤`
+    : `${MEAL_NAMES[state.meal]}籤筒已經空了`;
+}
+function renderExclude() {
+  const box = $("excludeList");
+  box.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const group = document.createElement("div");
+    group.className = "cat";
+    const h = document.createElement("h3");
+    h.textContent = cat;
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    DISHES.filter(d => d.cat === cat).forEach(d => {
+      const chip = document.createElement("button");
+      chip.className = "chip";
+      chip.textContent = `${d.emoji} ${d.name}`;
+      chip.setAttribute("aria-pressed", String(state.excluded.has(d.id)));
+      chip.addEventListener("click", () => {
+        if (state.excluded.has(d.id)) state.excluded.delete(d.id);
+        else state.excluded.add(d.id);
+        chip.setAttribute("aria-pressed", String(state.excluded.has(d.id)));
+        renderCount();
+        $("note").textContent = "";
+      });
+      chips.appendChild(chip);
+    });
+    group.append(h, chips);
+    box.appendChild(group);
+  });
+}
+function renderHistory() {
+  const list = $("historyList");
+  list.innerHTML = "";
+  $("historyEmpty").hidden = state.history.length > 0;
+  state.history.forEach(item => {
+    const li = document.createElement("li");
+    const time = new Date(item.time);
+    const stamp = `${time.getMonth() + 1}/${time.getDate()} ${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`;
+    li.innerHTML = `
+      <span class="h-rank ${item.rank === "凶" ? "kyo" : ""}">${item.rank}</span>
+      <span>${item.emoji} ${item.name}</span>
+      <span class="h-meta">${MEAL_NAMES[item.meal]} ${stamp}</span>`;
+    list.appendChild(li);
+  });
+}
+function showResult(dish, rank) {
+  $("slipNo").textContent = `第 ${toKanji(dish.id)} 番`;
+  $("slipMeal").textContent = MEAL_NAMES[state.meal];
+  const rankEl = $("slipRank");
+  rankEl.textContent = rank.name;
+  rankEl.classList.toggle("kyo", rank.name === "凶");
+  $("slipEmoji").textContent = dish.emoji;
+  $("slipName").textContent = dish.name;
+  $("slipPoem").innerHTML = dish.poem.map(line => `<span>${line}</span>`).join("");
+  $("luckFull").textContent = stars(randInt(rank.stars[0], rank.stars[1]));
+  $("luckHappy").textContent = stars(randInt(rank.stars[0], rank.stars[1]));
+  const oracle = $("slipOracle");
+  oracle.innerHTML = "";
+  if (rank.name === "凶") {
+    const kyo = document.createElement("p");
+    kyo.className = "kyo-line";
+    kyo.textContent = KYO_LINES[randInt(0, KYO_LINES.length - 1)];
+    oracle.appendChild(kyo);
+  }
+  const p = document.createElement("p");
+  p.textContent = dish.oracle;
+  oracle.appendChild(p);
+
+  const result = $("result");
+  result.hidden = false;
+  const slip = $("slip");
+  slip.classList.remove("open");
+  void slip.offsetWidth;          // 重新觸發展開動畫
+  slip.classList.add("open");
+  result.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+}
+
+// ===== 抽籤 =====
+function setBusy(busy) {
+  state.busy = busy;
+  $("drawBtn").disabled = busy;
+  $("againBtn").disabled = busy;
+}
+function resetStick() {
+  const stick = $("stick");
+  stick.style.transition = "none";
+  stick.classList.remove("out");
+  void stick.getBoundingClientRect();
+  stick.style.transition = "";
+}
+function draw() {
+  if (state.busy) return;
+  const note = $("note");
+  const pool = currentPool();
+  if (pool.length === 0) {
+    note.textContent = "全部都不想吃？那喝水好了 💧 按下方「全部恢復」就能重新抽。";
+    return;
+  }
+  let candidates = pool.filter(d => d.id !== state.lastId);
+  let onlyOne = false;
+  if (candidates.length === 0) { candidates = pool; onlyOne = true; }
+
+  const dish = candidates[randInt(0, candidates.length - 1)];
+  const rank = pickRank();
+  note.textContent = "";
+  setBusy(true);
+  resetStick();
+
+  const box = $("box");
+  if (SHAKE_MS > 0) box.classList.add("shaking");
+  if (state.soundOn) playShake(SHAKE_MS / 1000 || 0.3);
+
+  setTimeout(() => {
+    box.classList.remove("shaking");
+    $("stick").classList.add("out");
+    if (state.soundOn) playBell();
+
+    setTimeout(() => {
+      state.lastId = dish.id;
+      showResult(dish, rank);
+      if (onlyOne) note.textContent = "籤筒裡只剩這支了。";
+      state.history.unshift({ id: dish.id, name: dish.name, emoji: dish.emoji, rank: rank.name, meal: state.meal, time: Date.now() });
+      state.history = state.history.slice(0, 5);
+      saveHistory();
+      renderHistory();
+      setBusy(false);
+    }, EMERGE_MS);
+  }, SHAKE_MS);
+}
+
+// ===== 事件 =====
+document.querySelectorAll(".tabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (state.busy) return;
+    state.meal = btn.dataset.meal;
+    $("autoHint").textContent = "";
+    $("note").textContent = "";
+    renderTabs();
+    renderCount();
+  });
+});
+$("drawBtn").addEventListener("click", draw);
+$("againBtn").addEventListener("click", draw);
+$("resetBtn").addEventListener("click", () => {
+  state.excluded.clear();
+  renderExclude();
+  renderCount();
+  $("note").textContent = "";
+});
+$("soundBtn").addEventListener("click", () => {
+  state.soundOn = !state.soundOn;
+  const btn = $("soundBtn");
+  btn.setAttribute("aria-pressed", String(state.soundOn));
+  btn.textContent = state.soundOn ? "🔊 音效開" : "🔇 音效關";
+  if (state.soundOn) getAudio();   // 在使用者點擊時啟動音訊
+});
+
+// ===== 初始化 =====
+$("autoHint").textContent = `現在是${MEAL_NAMES[state.meal]}時間，也可以點上方切換`;
+renderTabs();
+renderCount();
+renderExclude();
+renderHistory();
+</script>
+</body>
+</html>
